@@ -16,24 +16,26 @@ struct ContentView: View {
       Text("Hello, world!")
     }
     .padding()
-    .onAppear {
-      Task {
-        do {
-          let example = ServiceExamples()
-          try? await example.allStationsExample()
-          try? await example.carrierInfoExample()
-          try? await example.copyrightExample()
-          try? await example.nearestCityExample()
-          try? await example.nearestStationsExample()
-          try? await example.routeStationsExample()
-          try? await example.scheduleBetweenStationsExample()
-          try? await example.stationScheduleExample()
-        }
-      }
-    }
+    //    .onAppear {
+    //      Task {
+    //        do {
+    //          let example = ServiceExamples()
+    //          try? await example.allStationsExample()
+    //          try? await example.carrierInfoExample()
+    //          try? await example.copyrightExample()
+    //          try? await example.nearestCityExample()
+    //          try? await example.nearestStationsExample()
+    //          try? await example.routeStationsExample()
+    //          try? await example.scheduleBetweenStationsExample()
+    //          try? await example.stationScheduleExample()
+    //        }
+    //      }
+    //    }
   }
 }
 
 #Preview {
   ContentView()
 }
+
+
