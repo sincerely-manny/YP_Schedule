@@ -1,0 +1,64 @@
+import SwiftUI
+
+struct StationSelectionView: View {
+  var stations: [Components.Schemas.Station]
+  var onStationSelected: (Components.Schemas.Station) -> Void
+  @Environment(\.navigation) private var navigation
+  @State private var searchText = ""
+
+  private var filteredStations: [Components.Schemas.Station] {
+    if searchText.isEmpty {
+      return stations
+    } else {
+      return stations.filter {
+        ($0.title ?? "").localizedCaseInsensitiveContains(searchText)
+      }
+    }
+  }
+
+  private func getTitle(for station: Components.Schemas.Station) -> String {
+    if let title = station.title, title.count > 0 {
+      return title
+    } else {
+      return "Неизвестная станция"
+    }
+  }
+
+  var body: some View {
+    ScrollView {
+      LazyVStack {
+        ForEach(filteredStations, id: \.codes?.yandex_code) { station in
+          Button(action: {
+            onStationSelected(station)
+          }) {
+            HStack(alignment: .center) {
+              Text(getTitle(for: station))
+                .foregroundColor(.primary)
+              Spacer()
+              Image(systemName: "chevron.right").foregroundColor(.ypBlack)
+            }
+            .frame(height: 60)
+            .padding(.horizontal, 16)
+          }
+        }
+      }
+    }
+    .navigationTitle("Выбор станции")
+    .navigationBarBackButtonHidden(true)
+    .searchable(
+      text: $searchText,
+      placement: .navigationBarDrawer(displayMode: .always),
+      prompt: "Введите запрос"
+    )
+    .toolbar {
+      ToolbarItem(placement: .navigationBarLeading) {
+        Button(action: {
+          navigation.goBack()
+        }) {
+          Image(systemName: "chevron.left")
+            .foregroundColor(.ypBlack)
+        }
+      }
+    }
+  }
+}
