@@ -24,41 +24,40 @@ struct CitySelectionView: View {
   }
 
   var body: some View {
-    ScrollView {
-      LazyVStack {
-        ForEach(filteredSettlements, id: \.codes?.yandex_code) { settlement in
-          Button(action: {
-            navigation.navigateTo(StationDestination(stations: settlement.stations ?? []))
-          }) {
-            HStack(alignment: .center) {
-              Text(getTitle(for: settlement))
-                .foregroundColor(.primary)
-              Spacer()
-              Image(systemName: "chevron.right").foregroundColor(.ypBlack)
+    VStack {
+      if filteredSettlements.isEmpty {
+        Spacer()
+        Text("Город не найден")
+          .font(.system(size: 24, weight: .bold))
+          .foregroundColor(.ypBlack)
+        Spacer()
+      } else {
+        ScrollView {
+          LazyVStack {
+            ForEach(filteredSettlements, id: \.codes?.yandex_code) { settlement in
+              Button(action: {
+                navigation.navigateTo(StationDestination(stations: settlement.stations ?? []))
+              }) {
+                HStack(alignment: .center) {
+                  Text(getTitle(for: settlement))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                  Spacer()
+                  Image(systemName: "chevron.right").foregroundColor(.ypBlack)
+                }
+                .frame(height: 60)
+                .padding(.horizontal, 16)
+              }
             }
-            .frame(height: 60)
-            .padding(.horizontal, 16)
           }
         }
       }
-    }
-    .navigationTitle("Выбор города")
-    .navigationBarBackButtonHidden(true)
-    .searchable(
-      text: $searchText,
-      placement: .navigationBarDrawer(displayMode: .always),
-      prompt: "Введите запрос"
-    )
-    .toolbar {
-      ToolbarItem(placement: .navigationBarLeading) {
-        Button(action: {
-          navigation.goBack()
-        }) {
-          Image(systemName: "chevron.left")
-            .foregroundColor(.ypBlack)
-        }
-      }
-    }
+    }.navigationBarTitle("Выбор города", displayMode: .inline)
+      .searchable(
+        text: $searchText,
+        placement: .navigationBarDrawer(displayMode: .always),
+        prompt: "Введите запрос"
+      )
   }
 }
 

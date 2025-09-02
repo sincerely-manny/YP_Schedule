@@ -25,40 +25,40 @@ struct StationSelectionView: View {
   }
 
   var body: some View {
-    ScrollView {
-      LazyVStack {
-        ForEach(filteredStations, id: \.codes?.yandex_code) { station in
-          Button(action: {
-            onStationSelected(station)
-          }) {
-            HStack(alignment: .center) {
-              Text(getTitle(for: station))
-                .foregroundColor(.primary)
-              Spacer()
-              Image(systemName: "chevron.right").foregroundColor(.ypBlack)
+    VStack {
+      if filteredStations.isEmpty {
+        Spacer()
+        Text("Станция не найдена")
+          .font(.system(size: 24, weight: .bold))
+          .foregroundColor(.ypBlack)
+        Spacer()
+      } else {
+        ScrollView {
+          LazyVStack {
+            ForEach(filteredStations, id: \.codes?.yandex_code) { station in
+              Button(action: {
+                onStationSelected(station)
+              }) {
+                HStack(alignment: .center) {
+                  Text(getTitle(for: station))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                  Spacer()
+                  Image(systemName: "chevron.right").foregroundColor(.ypBlack)
+                }
+                .frame(height: 60)
+                .padding(.horizontal, 16)
+              }
             }
-            .frame(height: 60)
-            .padding(.horizontal, 16)
           }
         }
       }
     }
-    .navigationTitle("Выбор станции")
-    .navigationBarBackButtonHidden(true)
+    .navigationBarTitle("Выбор станции", displayMode: .inline)
     .searchable(
       text: $searchText,
       placement: .navigationBarDrawer(displayMode: .always),
       prompt: "Введите запрос"
     )
-    .toolbar {
-      ToolbarItem(placement: .navigationBarLeading) {
-        Button(action: {
-          navigation.goBack()
-        }) {
-          Image(systemName: "chevron.left")
-            .foregroundColor(.ypBlack)
-        }
-      }
-    }
   }
 }

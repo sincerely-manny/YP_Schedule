@@ -62,6 +62,7 @@ struct ScheduleScreen: View {
       .navigationDestination(for: CityDestination.self) { destination in
         CitySelectionView(settlements: destination.settlements)
           .environment(\.navigation, navigationManager)
+          .toolbarRole(.editor)
       }
       .navigationDestination(for: StationDestination.self) { destination in
         StationSelectionView(
@@ -72,6 +73,7 @@ struct ScheduleScreen: View {
           }
         )
         .environment(\.navigation, navigationManager)
+        .toolbarRole(.editor)
       }
     }
     .environment(\.navigation, navigationManager)
