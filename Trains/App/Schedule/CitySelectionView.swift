@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CitySelectionView: View {
   var settlements: [Components.Schemas.Settlement]
-  @Environment(\.navigation) private var navigation
+  @EnvironmentObject var navigationManager: NavigationManager
   @State private var searchText = ""
 
   private var filteredSettlements: [Components.Schemas.Settlement] {
@@ -36,7 +36,8 @@ struct CitySelectionView: View {
           LazyVStack {
             ForEach(filteredSettlements, id: \.codes?.yandex_code) { settlement in
               Button(action: {
-                navigation.navigateTo(StationDestination(stations: settlement.stations ?? []))
+                navigationManager.navigateTo(
+                  StationDestination(stations: settlement.stations ?? []))
               }) {
                 HStack(alignment: .center) {
                   Text(getTitle(for: settlement))
@@ -63,5 +64,4 @@ struct CitySelectionView: View {
 
 #Preview {
   CitySelectionView(settlements: placeholder)
-    .environment(\.navigation, NavigationManager())
 }

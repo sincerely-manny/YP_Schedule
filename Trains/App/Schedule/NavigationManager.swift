@@ -18,17 +18,6 @@ class NavigationManager: ObservableObject {
   }
 }
 
-struct NavigationManagerKey: EnvironmentKey {
-  static let defaultValue = NavigationManager()
-}
-
-extension EnvironmentValues {
-  var navigation: NavigationManager {
-    get { self[NavigationManagerKey.self] }
-    set { self[NavigationManagerKey.self] = newValue }
-  }
-}
-
 struct CityDestination: Hashable {
   let settlements: [Components.Schemas.Settlement]
 

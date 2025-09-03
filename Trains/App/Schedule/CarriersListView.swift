@@ -1,10 +1,12 @@
-import OpenAPIURLSession
 import SwiftUI
 
 struct CarriersListView: View {
   var from: Components.Schemas.Station
   var to: Components.Schemas.Station
-  @StateObject private var viewModel: CarriersListModel
+  @StateObject private var viewModel: CarriersListViewModel
+  @State private var appliedTimeFilters = Set<TimeFilter>()
+  @State private var appliedTransferFilter = TransferFilter.no
+
   let isoFormatter: DateFormatter = {
     let isoFormatter = DateFormatter()
     isoFormatter.dateFormat = "yyyy-MM-dd"
@@ -19,7 +21,7 @@ struct CarriersListView: View {
 
   init(
     from: Components.Schemas.Station, to: Components.Schemas.Station,
-    viewModel: CarriersListModel = CarriersListModel()
+    viewModel: CarriersListViewModel = CarriersListViewModel()
   ) {
     self._viewModel = StateObject(wrappedValue: viewModel)
     self.from = from
@@ -35,15 +37,35 @@ struct CarriersListView: View {
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal)
       }
-      ScrollView {
-        LazyVStack(spacing: 8) {
-          if let segments = viewModel.schedule?.segments {
-            ForEach(segments, id: \.self) { segment in
-              SegmentView(
-                segment: segment, isoFormatter: isoFormatter, dateFormatter: dateFormatter)
+      ZStack(alignment: .bottom) {
+        ScrollView {
+          LazyVStack(spacing: 8) {
+            if let segments = viewModel.schedule?.segments {
+              ForEach(segments, id: \.self) { segment in
+                SegmentView(
+                  segment: segment, isoFormatter: isoFormatter, dateFormatter: dateFormatter)
+              }
             }
           }
-        }.padding(.horizontal)
+          .padding(.horizontal)
+          .padding(.bottom, 100)
+        }
+        NavigationLink {
+          FiltersView(
+            appliedTimeFilters: $appliedTimeFilters,
+            appliedTransferFilter: $appliedTransferFilter,
+          )
+          .toolbarRole(.editor)
+        } label: {
+          Text("Уточнить время")
+            .foregroundColor(.ypWhiteUniversal)
+            .font(.system(size: 17, weight: .bold))
+            .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60)
+            .background(.ypBlue)
+            .cornerRadius(16)
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 24)
       }
     }
     .onAppear {
@@ -63,6 +85,12 @@ struct SegmentView: View {
     guard let dateString = segment.start_date else { return "" }
     let date = isoFormatter.date(from: dateString) ?? Date()
     return dateFormatter.string(from: date)
+  }
+
+  private var duration: String {
+    let float = (Float(segment.duration ?? 0) / 1800.0).rounded() / 2
+    return float.truncatingRemainder(dividingBy: 1) == 0
+      ? String(format: "%.0f", float) : String(float)
   }
 
   var body: some View {
@@ -99,16 +127,16 @@ struct SegmentView: View {
           .lineLimit(1)
       }
       HStack(alignment: .center, spacing: 4) {
-        Text("14:00")
+        Text((segment.departure ?? "").prefix(5))
         Rectangle()
           .frame(maxWidth: .infinity, maxHeight: 1)
           .foregroundColor(.ypGray)
-        Text("20 часов")
+        Text("\(duration) часов")
           .font(.system(size: 12))
         Rectangle()
           .frame(maxWidth: .infinity, maxHeight: 1)
           .foregroundColor(.ypGray)
-        Text("14:30")
+        Text((segment.arrival ?? "").prefix(5))
       }
     }
     .padding(.all, 14)
@@ -118,57 +146,141 @@ struct SegmentView: View {
   }
 }
 
-#Preview {
-  CarriersListView(
-    from: Components.Schemas.Station(
-      title: "Санкт-Петербург (Московский вокзал)",
-      station_type: "train_station",
-      transport_type: "train",
-      direction: "Московское",
-      codes: Components.Schemas.Station.codesPayload(
-        yandex_code: "s9602494",
-        esr_code: "031812"
-      )
-    ),
-    to: Components.Schemas.Station(
-      title: "Москва (Ленинградский вокзал)",
-      station_type: "train_station",
-      transport_type: "train",
-      direction: "Ленинградское",
-      codes: Components.Schemas.Station.codesPayload(
-        yandex_code: "s2006004",
-        esr_code: "060073"
-      )
-    )
-  )
+enum TimeFilter: String, CaseIterable {
+  case morning = "Утро 06:00 - 12:00"
+  case afternoon = "День 12:00 - 18:00"
+  case evening = "Вечер 18:00 - 00:00"
+  case night = "Ночь 00:00 - 06:00"
 }
 
-final class CarriersListModel: ObservableObject {
-  @Published var schedule: ScheduleBetweenStations? = nil
-  @Published var isLoading = false
-  @Published var error: Error?
+enum TransferFilter: String, CaseIterable {
+  case yes = "Да"
+  case no = "Нет"
 
-  private let client: Client
-  private let service: ScheduleBetweenStationsService
-
-  init() {
-    self.client = Client(
-      serverURL: try! Servers.Server1.url(), transport: URLSessionTransport())
-    self.service = ScheduleBetweenStationsService(client: client, apikey: Env.API_KEY)
-  }
-
-  @MainActor
-  func loadSchedule(from: Components.Schemas.Station, to: Components.Schemas.Station) async {
-    guard let fromCode = from.codes?.yandex_code, let toCode = to.codes?.yandex_code else {
-      return
+  var boolean: Bool {
+    switch self {
+    case .yes:
+      return true
+    case .no:
+      return false
     }
-
-    isLoading = true
-    do {
-      schedule = try await service.getScheduleBetweenStations(from: fromCode, to: toCode)
-    } catch {
-      self.error = error
-    }
-    isLoading = false
   }
+}
+
+struct FiltersView: View {
+  @Binding var appliedTimeFilters: Set<TimeFilter>
+  @Binding var appliedTransferFilter: TransferFilter
+  @State private var isDirty = false
+  @Environment(\.dismiss) var dismiss
+
+  var body: some View {
+    ZStack(alignment: .bottom) {
+
+      ScrollView {
+        VStack(alignment: .leading, spacing: 16) {
+          Text("Время отправления")
+            .font(.system(size: 24, weight: .bold))
+          ForEach(TimeFilter.allCases, id: \.self) { filter in
+            Button {
+              if appliedTimeFilters.contains(filter) {
+                appliedTimeFilters.remove(filter)
+              } else {
+                appliedTimeFilters.insert(filter)
+              }
+              isDirty = true
+            } label: {
+              HStack {
+                Text(filter.rawValue)
+                Spacer()
+                Image(
+                  systemName: appliedTimeFilters.contains(filter)
+                    ? "checkmark.square.fill" : "square"
+                )
+                .resizable().frame(width: 24, height: 24)
+              }.frame(height: 60)
+            }
+          }
+          Text("Показывать варианты с пересадками")
+            .font(.system(size: 24, weight: .bold))
+          ForEach(TransferFilter.allCases, id: \.self) { filter in
+            Button {
+              appliedTransferFilter = filter
+              isDirty = true
+            } label: {
+              HStack {
+                Text(filter.rawValue)
+                Spacer()
+                Image(
+                  appliedTransferFilter == filter ? "radio.on" : "radio.off"
+                )
+                .resizable().frame(width: 24, height: 24)
+              }.frame(height: 60)
+            }
+          }
+          Spacer()
+
+        }
+        .foregroundColor(.ypBlack)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal)
+        .padding(.bottom, 100)
+      }
+      if isDirty {
+        Button {
+          dismiss()
+        } label: {
+          Text("Применить")
+            .foregroundColor(.ypWhiteUniversal)
+            .font(.system(size: 17, weight: .bold))
+            .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60)
+            .background(.ypBlue)
+            .cornerRadius(16)
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 24)
+      }
+    }
+  }
+}
+
+#Preview {
+  NavigationStack {
+    CarriersListView(
+      from: Components.Schemas.Station(
+        title: "Санкт-Петербург (Московский вокзал)",
+        station_type: "train_station",
+        transport_type: "train",
+        direction: "Московское",
+        codes: Components.Schemas.Station.codesPayload(
+          yandex_code: "s9602494",
+          esr_code: "031812"
+        )
+      ),
+      to: Components.Schemas.Station(
+        title: "Москва (Ленинградский вокзал)",
+        station_type: "train_station",
+        transport_type: "train",
+        direction: "Ленинградское",
+        codes: Components.Schemas.Station.codesPayload(
+          yandex_code: "s2006004",
+          esr_code: "060073"
+        )
+      )
+    )
+  }
+}
+
+#Preview {
+  struct PreviewWrapper: View {
+    @State var appliedTimeFilters = Set<TimeFilter>()
+    @State var appliedTransferFilter = TransferFilter.no
+
+    var body: some View {
+      FiltersView(
+        appliedTimeFilters: $appliedTimeFilters,
+        appliedTransferFilter: $appliedTransferFilter
+      )
+    }
+  }
+  return PreviewWrapper()
 }

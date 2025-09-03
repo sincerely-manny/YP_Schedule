@@ -16,13 +16,15 @@ struct ScheduleScreen: View {
               settlements: viewModel.settlements,
               placeholder: "Откуда",
               selectedStation: $from,
-              selectedStationBinding: $selectedStationBinding
+              selectedStationBinding: $selectedStationBinding,
+              navigationManager: navigationManager  // Pass directly
             )
             CityPicker(
               settlements: viewModel.settlements,
               placeholder: "Куда",
               selectedStation: $to,
-              selectedStationBinding: $selectedStationBinding
+              selectedStationBinding: $selectedStationBinding,
+              navigationManager: navigationManager  // Pass directly
             )
           }
           .frame(maxWidth: .infinity)
@@ -46,16 +48,17 @@ struct ScheduleScreen: View {
         .background(Color.ypBlue)
         .clipShape(RoundedRectangle(cornerRadius: 20))
 
-        Button {
-          if let from, let to {
+        if let from, let to {
+          Button {
             navigationManager.navigateTo(CarriersDestination(from: from, to: to))
+          } label: {
+            Text("Найти")
+              .foregroundColor(.ypWhiteUniversal)
+              .font(.system(size: 17, weight: .bold))
+              .frame(width: 150, height: 60)
+              .background(.ypBlue)
+              .cornerRadius(16)
           }
-        } label: {
-          Text("Найти")
-            .frame(width: 150, height: 60)
-            .background(.ypBlue)
-            .foregroundColor(.ypWhiteUniversal)
-            .cornerRadius(16)
         }
 
         Spacer()
@@ -63,7 +66,7 @@ struct ScheduleScreen: View {
       .padding(.horizontal)
       .navigationDestination(for: CityDestination.self) { destination in
         CitySelectionView(settlements: destination.settlements)
-          .environment(\.navigation, navigationManager)
+          .environmentObject(navigationManager)
           .toolbarRole(.editor)
       }
       .navigationDestination(for: StationDestination.self) { destination in
@@ -74,16 +77,16 @@ struct ScheduleScreen: View {
             navigationManager.goBackToRoot()
           }
         )
-        .environment(\.navigation, navigationManager)
+        .environmentObject(navigationManager)
         .toolbarRole(.editor)
       }
       .navigationDestination(for: CarriersDestination.self) { destination in
         CarriersListView(from: destination.from, to: destination.to)
-          .environment(\.navigation, navigationManager)
+          .environmentObject(navigationManager)
           .toolbarRole(.editor)
       }
     }
-    .environment(\.navigation, navigationManager)
+    .environmentObject(navigationManager)
     .onAppear {
       Task {
         await viewModel.fetchStations()
@@ -97,12 +100,12 @@ struct CityPicker: View {
   var placeholder: String
   @Binding var selectedStation: Components.Schemas.Station?
   @Binding var selectedStationBinding: Binding<Components.Schemas.Station?>?
-  @Environment(\.navigation) private var navigation
+  var navigationManager: NavigationManager  // Pass directly
 
   var body: some View {
     Button(action: {
       selectedStationBinding = $selectedStation
-      navigation.navigateTo(CityDestination(settlements: settlements))
+      navigationManager.navigateTo(CityDestination(settlements: settlements))
     }) {
       HStack {
         Text(selectedStation?.title ?? placeholder)

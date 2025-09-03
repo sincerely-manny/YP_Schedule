@@ -3,7 +3,7 @@ import SwiftUI
 struct StationSelectionView: View {
   var stations: [Components.Schemas.Station]
   var onStationSelected: (Components.Schemas.Station) -> Void
-  @Environment(\.navigation) private var navigation
+  @EnvironmentObject var navigationManager: NavigationManager
   @State private var searchText = ""
 
   private var filteredStations: [Components.Schemas.Station] {
