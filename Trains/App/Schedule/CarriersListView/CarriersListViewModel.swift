@@ -23,7 +23,8 @@ final class CarriersListViewModel: ObservableObject {
 
     isLoading = true
     do {
-      schedule = try await service.getScheduleBetweenStations(from: fromCode, to: toCode)
+      schedule = try await service.getScheduleBetweenStations(
+        from: fromCode, to: toCode, transfers: true)
     } catch {
       self.error = error
     }
