@@ -33,11 +33,11 @@ struct CityDestination: Hashable {
   let settlements: [Components.Schemas.Settlement]
 
   static func == (lhs: CityDestination, rhs: CityDestination) -> Bool {
-    return lhs.settlements.count == rhs.settlements.count
+    return lhs.hashValue == rhs.hashValue
   }
 
   func hash(into hasher: inout Hasher) {
-    hasher.combine(settlements.count)
+    hasher.combine(settlements.map { $0.codes?.yandex_code })
   }
 }
 
@@ -45,10 +45,24 @@ struct StationDestination: Hashable {
   let stations: [Components.Schemas.Station]
 
   static func == (lhs: StationDestination, rhs: StationDestination) -> Bool {
-    return lhs.stations.count == rhs.stations.count
+    return lhs.hashValue == rhs.hashValue
   }
 
   func hash(into hasher: inout Hasher) {
-    hasher.combine(stations.count)
+    hasher.combine(stations.map { $0.codes?.yandex_code })
+  }
+}
+
+struct CarriersDestination: Hashable {
+  let from: Components.Schemas.Station
+  let to: Components.Schemas.Station
+
+  static func == (lhs: CarriersDestination, rhs: CarriersDestination) -> Bool {
+    return lhs.from == rhs.from && lhs.to == rhs.to
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(from.codes?.yandex_code)
+    hasher.combine(to.codes?.yandex_code)
   }
 }

@@ -9,7 +9,7 @@ struct ScheduleScreen: View {
 
   var body: some View {
     NavigationStack(path: $navigationManager.path) {
-      VStack(spacing: 20) {
+      VStack(spacing: 16) {
         HStack(alignment: .center, spacing: 16) {
           VStack {
             CityPicker(
@@ -46,19 +46,21 @@ struct ScheduleScreen: View {
         .background(Color.ypBlue)
         .clipShape(RoundedRectangle(cornerRadius: 20))
 
-        if viewModel.isLoading {
-          ProgressView("Загрузка городов...")
-        }
-
-        if let error = viewModel.error {
-          Text("Ошибка: \(error.localizedDescription)")
-            .foregroundColor(.red)
+        Button {
+          if let from, let to {
+            navigationManager.navigateTo(CarriersDestination(from: from, to: to))
+          }
+        } label: {
+          Text("Найти")
+            .frame(width: 150, height: 60)
+            .background(.ypBlue)
+            .foregroundColor(.ypWhiteUniversal)
+            .cornerRadius(16)
         }
 
         Spacer()
       }
       .padding(.horizontal)
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
       .navigationDestination(for: CityDestination.self) { destination in
         CitySelectionView(settlements: destination.settlements)
           .environment(\.navigation, navigationManager)
@@ -74,6 +76,11 @@ struct ScheduleScreen: View {
         )
         .environment(\.navigation, navigationManager)
         .toolbarRole(.editor)
+      }
+      .navigationDestination(for: CarriersDestination.self) { destination in
+        CarriersListView(from: destination.from, to: destination.to)
+          .environment(\.navigation, navigationManager)
+          .toolbarRole(.editor)
       }
     }
     .environment(\.navigation, navigationManager)

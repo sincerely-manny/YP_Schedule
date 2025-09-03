@@ -491,11 +491,11 @@ components:
                     description: Периодичность рейсов, например, "автобус раз в 10-15 минут".
                   begin_time:
                     type: string
-                    format: date-time
+                    # format: date-time
                     description: Время начала движения по нитке.
                   end_time:
                     type: string
-                    format: date-time
+                    # format: date-time
                     description: Время окончания движения по нитке.
               duration:
                 type: integer
@@ -514,12 +514,16 @@ components:
           $ref: '#/components/schemas/Station'
         departure:
           type: string
-          format: date-time
+          # format: date-time
           description: Время отправления
         arrival:
           type: string
-          format: date-time
+          # format: date-time
           description: Время прибытия
+        start_date:
+          type: string
+          format: date
+          description: Дата отправления рейса
         thread:
           $ref: '#/components/schemas/Thread'
         tickets_info:
@@ -527,6 +531,9 @@ components:
         duration:
           type: integer
           description: Длительность рейса в секундах
+        has_transfers:
+          type: boolean
+          description: Признак наличия пересадок по маршруту.
     Pagination:
       type: object
       properties:

@@ -54,6 +54,15 @@ final class ScheduleViewModel: ObservableObject {
           }
           .sorted { ($0.title ?? "") < ($1.title ?? "") } ?? []
 
+        // for settlement in settlements {
+        //   for station in settlement.stations ?? [] {
+        //     if let title = station.title, title.contains("Москва") {
+        //       print(station)
+        //     }
+        //   }
+
+        // }
+
         isLoading = false
       }
 
@@ -108,6 +117,16 @@ let placeholder = [
         codes: Components.Schemas.Station.codesPayload(
           yandex_code: "s9879173",
           esr_code: "995"
+        )
+      ),
+      Components.Schemas.Station(
+        title: "Москва (Ленинградский вокзал)",
+        station_type: "train_station",
+        transport_type: "train",
+        direction: "Ленинградское",
+        codes: Components.Schemas.Station.codesPayload(
+          yandex_code: "s2006004",
+          esr_code: "060073"
         )
       ),
     ]
