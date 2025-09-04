@@ -17,7 +17,7 @@ final class ScheduleViewModel: ObservableObject {
   init() {
     self.client = Client(
       serverURL: try! Servers.Server1.url(), transport: URLSessionTransport())
-    self.service = AllStationsService(client: client, apikey: Env.API_KEY)
+    self.service = AllStationsService(client: client, apikey: "Env.API_KEY")
   }
 
   @MainActor
@@ -63,20 +63,12 @@ final class ScheduleViewModel: ObservableObject {
       }
 
     } catch {
-      if let urlError = error as? URLError {
-        switch urlError.code {
-        case .notConnectedToInternet,
-          .networkConnectionLost,
-          .dataNotAllowed,
-          .cannotFindHost,
-          .cannotConnectToHost,
-          .dnsLookupFailed,
-          .timedOut:
-          self.error = .noConnection
-        default:
-          self.error = .unknown
-        }
-      } else {
+      let nsError = error as NSError
+
+      switch nsError.code {
+      case ...99:
+        self.error = .noConnection
+      default:
         self.error = .unknown
       }
 
