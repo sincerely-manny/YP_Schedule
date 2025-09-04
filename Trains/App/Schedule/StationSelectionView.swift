@@ -5,6 +5,7 @@ struct StationSelectionView: View {
   var onStationSelected: (Components.Schemas.Station) -> Void
   @EnvironmentObject var navigationManager: NavigationManager
   @State private var searchText = ""
+  @State private var searchIsPresented = false
 
   private var filteredStations: [Components.Schemas.Station] {
     if searchText.isEmpty {
@@ -37,7 +38,9 @@ struct StationSelectionView: View {
           LazyVStack {
             ForEach(filteredStations, id: \.codes?.yandex_code) { station in
               Button(action: {
+                searchIsPresented = false
                 onStationSelected(station)
+                navigationManager.goBackToRoot()
               }) {
                 HStack(alignment: .center) {
                   Text(getTitle(for: station))
@@ -57,6 +60,7 @@ struct StationSelectionView: View {
     .navigationBarTitle("Выбор станции", displayMode: .inline)
     .searchable(
       text: $searchText,
+      isPresented: $searchIsPresented,
       placement: .navigationBarDrawer(displayMode: .always),
       prompt: "Введите запрос"
     )

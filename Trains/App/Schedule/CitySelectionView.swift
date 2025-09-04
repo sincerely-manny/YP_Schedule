@@ -4,6 +4,7 @@ struct CitySelectionView: View {
   var settlements: [Components.Schemas.Settlement]
   @EnvironmentObject var navigationManager: NavigationManager
   @State private var searchText = ""
+  @State private var searchIsPresented = false
 
   private var filteredSettlements: [Components.Schemas.Settlement] {
     if searchText.isEmpty {
@@ -36,8 +37,10 @@ struct CitySelectionView: View {
           LazyVStack {
             ForEach(filteredSettlements, id: \.codes?.yandex_code) { settlement in
               Button(action: {
-                navigationManager.navigateTo(
-                  StationDestination(stations: settlement.stations ?? []))
+                let stations = (settlement.stations ?? []).compactMap { $0 }
+                searchIsPresented = false  // messes navigation state somehow othewise
+                navigationManager.navigateTo(StationDestination(stations: stations))
+
               }) {
                 HStack(alignment: .center) {
                   Text(getTitle(for: settlement))
@@ -53,12 +56,15 @@ struct CitySelectionView: View {
           }
         }
       }
-    }.navigationBarTitle("Выбор города", displayMode: .inline)
-      .searchable(
-        text: $searchText,
-        placement: .navigationBarDrawer(displayMode: .always),
-        prompt: "Введите запрос"
-      )
+    }
+    .navigationBarTitle("Выбор города", displayMode: .inline)
+    .searchable(
+      text: $searchText,
+      isPresented: $searchIsPresented,
+      placement: .navigationBarDrawer(displayMode: .always),
+      prompt: "Введите запрос",
+    )
+
   }
 }
 

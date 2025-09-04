@@ -82,7 +82,6 @@ struct ScheduleScreen: View {
             stations: destination.stations,
             onStationSelected: { station in
               selectedStationBinding?.wrappedValue = station
-              navigationManager.goBackToRoot()
             }
           )
           .environmentObject(navigationManager)
