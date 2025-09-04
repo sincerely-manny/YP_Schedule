@@ -61,41 +61,54 @@ struct CarriersListView: View {
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal)
       }
-      ZStack(alignment: .bottom) {
-        ScrollView {
-          LazyVStack(spacing: 8) {
-            ForEach(filteredSegments, id: \.self) { segment in
-              SegmentView(
-                segment: segment, isoFormatter: isoFormatter, dateFormatter: dateFormatter)
+      ZStack {
+        if filteredSegments.isEmpty && !viewModel.isLoading {
+          VStack {
+            Spacer()
+            Text("Вариантов нет")
+              .font(.system(size: 24, weight: .bold))
+              .foregroundColor(.ypBlack)
+            Spacer()
+          }
+        } else {
+          ScrollView {
+            LazyVStack(spacing: 8) {
+              ForEach(filteredSegments, id: \.self) { segment in
+                SegmentView(
+                  segment: segment, isoFormatter: isoFormatter, dateFormatter: dateFormatter)
+              }
             }
+            .padding(.horizontal)
+            .padding(.bottom, 100)
+          }
+        }
+        VStack {
+          Spacer()
+          NavigationLink {
+            FiltersView(
+              appliedTimeFilters: $appliedTimeFilters,
+              appliedTransferFilter: $appliedTransferFilter,
+            )
+            .toolbarRole(.editor)
+          } label: {
+            HStack(alignment: .center, spacing: 8) {
+              Text("Уточнить время")
+                .foregroundColor(.ypWhiteUniversal)
+                .font(.system(size: 17, weight: .bold))
+              if filterIsDirty {
+                Circle()
+                  .fill(.ypRed)
+                  .frame(width: 8, height: 8)
+              }
+            }
+            .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60)
+            .background(.ypBlue)
+            .cornerRadius(16)
           }
           .padding(.horizontal)
-          .padding(.bottom, 100)
+          .padding(.bottom, 24)
         }
-        NavigationLink {
-          FiltersView(
-            appliedTimeFilters: $appliedTimeFilters,
-            appliedTransferFilter: $appliedTransferFilter,
-          )
-          .toolbarRole(.editor)
-        } label: {
-          HStack(alignment: .center, spacing: 8) {
-            Text("Уточнить время")
-              .foregroundColor(.ypWhiteUniversal)
-              .font(.system(size: 17, weight: .bold))
-            if filterIsDirty {
-              Circle()
-                .fill(.ypRed)
-                .frame(width: 8, height: 8)
-            }
-          }
-          .frame(maxWidth: .infinity, minHeight: 60, maxHeight: 60)
-          .background(.ypBlue)
-          .cornerRadius(16)
-        }
-        .padding(.horizontal)
-        .padding(.bottom, 24)
-      }
+      }.frame(maxHeight: .infinity)
     }
     .onAppear {
       Task {

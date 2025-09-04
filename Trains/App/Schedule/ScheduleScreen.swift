@@ -17,15 +17,15 @@ struct ScheduleScreen: View {
               placeholder: "Откуда",
               selectedStation: $from,
               selectedStationBinding: $selectedStationBinding,
-              navigationManager: navigationManager  // Pass directly
-            )
+              navigationManager: navigationManager
+            ).disabled(viewModel.isLoading)
             CityPicker(
               settlements: viewModel.settlements,
               placeholder: "Куда",
               selectedStation: $to,
               selectedStationBinding: $selectedStationBinding,
-              navigationManager: navigationManager  // Pass directly
-            )
+              navigationManager: navigationManager
+            ).disabled(viewModel.isLoading)
           }
           .frame(maxWidth: .infinity)
           .background(Color.ypWhiteUniversal)
@@ -100,7 +100,7 @@ struct CityPicker: View {
   var placeholder: String
   @Binding var selectedStation: Components.Schemas.Station?
   @Binding var selectedStationBinding: Binding<Components.Schemas.Station?>?
-  var navigationManager: NavigationManager  // Pass directly
+  var navigationManager: NavigationManager
 
   var body: some View {
     Button(action: {

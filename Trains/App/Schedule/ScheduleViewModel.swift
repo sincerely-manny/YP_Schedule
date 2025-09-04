@@ -20,9 +20,9 @@ final class ScheduleViewModel: ObservableObject {
     isLoading = true
     error = nil
     // Initialize settlements with placeholder data
-    settlements = placeholder
-    isLoading = false
-    return
+    // settlements = placeholder
+    // isLoading = false
+    // return
     // End placeholder initialization
 
     do {
