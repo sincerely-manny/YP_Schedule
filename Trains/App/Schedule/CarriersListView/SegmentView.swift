@@ -18,54 +18,62 @@ struct SegmentView: View {
   }
 
   var body: some View {
-    VStack(spacing: 18) {
-      HStack(alignment: .top, spacing: 8) {
-        if let urlString = segment.thread?.carrier?.logo, let url = URL(string: urlString) {
-          AsyncImage(url: url) { image in
-            image.resizable().aspectRatio(contentMode: .fill)
-          } placeholder: {
-            ProgressView()
-          }
-          .frame(width: 38, height: 38, alignment: .leading)
-          .clipShape(.rect(cornerRadius: 12))
-        } else {
-          Image(systemName: "train.side.front.car")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 38, height: 38)
+    NavigationLink {
+      VStack {
+        Text("Carrier Details")
+      }
+      .navigationTitle("Информация о перевозчике")
+      .toolbarRole(.editor)
+    } label: {
+      VStack(spacing: 18) {
+        HStack(alignment: .top, spacing: 8) {
+          if let urlString = segment.thread?.carrier?.logo, let url = URL(string: urlString) {
+            AsyncImage(url: url) { image in
+              image.resizable().aspectRatio(contentMode: .fill)
+            } placeholder: {
+              ProgressView()
+            }
+            .frame(width: 38, height: 38, alignment: .leading)
             .clipShape(.rect(cornerRadius: 12))
-        }
-        VStack(alignment: .leading, spacing: 4) {
-          Text(segment.thread?.carrier?.title ?? "")
-            .lineLimit(1)
-          if Bool(segment.has_transfers ?? false) {
-            Text("С пересадкой")
-              .font(.system(size: 12))
-              .foregroundColor(.ypRed)
-              .lineLimit(1)
+          } else {
+            Image(systemName: "train.side.front.car")
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 38, height: 38)
+              .clipShape(.rect(cornerRadius: 12))
           }
+          VStack(alignment: .leading, spacing: 4) {
+            Text(segment.thread?.carrier?.title ?? "")
+              .lineLimit(1)
+            if Bool(segment.has_transfers ?? false) {
+              Text("С пересадкой")
+                .font(.system(size: 12))
+                .foregroundColor(.ypRed)
+                .lineLimit(1)
+            }
+          }
+          Spacer()
+          Text(date)
+            .font(.system(size: 12))
+            .lineLimit(1)
         }
-        Spacer()
-        Text(date)
-          .font(.system(size: 12))
-          .lineLimit(1)
+        HStack(alignment: .center, spacing: 4) {
+          Text((segment.departure ?? "").prefix(5))
+          Rectangle()
+            .frame(maxWidth: .infinity, maxHeight: 1)
+            .foregroundColor(.ypGray)
+          Text("\(duration) часов")
+            .font(.system(size: 12))
+          Rectangle()
+            .frame(maxWidth: .infinity, maxHeight: 1)
+            .foregroundColor(.ypGray)
+          Text((segment.arrival ?? "").prefix(5))
+        }
       }
-      HStack(alignment: .center, spacing: 4) {
-        Text((segment.departure ?? "").prefix(5))
-        Rectangle()
-          .frame(maxWidth: .infinity, maxHeight: 1)
-          .foregroundColor(.ypGray)
-        Text("\(duration) часов")
-          .font(.system(size: 12))
-        Rectangle()
-          .frame(maxWidth: .infinity, maxHeight: 1)
-          .foregroundColor(.ypGray)
-        Text((segment.arrival ?? "").prefix(5))
-      }
+      .padding(.all, 14)
+      .background(.ypLightGray)
+      .cornerRadius(24)
+      .foregroundColor(.ypBlackUniversal)
     }
-    .padding(.all, 14)
-    .background(.ypLightGray)
-    .cornerRadius(24)
-    .foregroundColor(.ypBlackUniversal)
   }
 }

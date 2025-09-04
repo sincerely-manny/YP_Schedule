@@ -4,10 +4,15 @@ import SwiftUI
 final class ScheduleViewModel: ObservableObject {
   @Published var settlements: [Components.Schemas.Settlement] = []
   @Published var isLoading = false
-  @Published var error: Error?
+  @Published var error: ModelError?
 
   private let client: Client
   private let service: AllStationsService
+
+  enum ModelError {
+    case noConnection
+    case unknown
+  }
 
   init() {
     self.client = Client(
@@ -54,20 +59,27 @@ final class ScheduleViewModel: ObservableObject {
           }
           .sorted { ($0.title ?? "") < ($1.title ?? "") } ?? []
 
-        // for settlement in settlements {
-        //   for station in settlement.stations ?? [] {
-        //     if let title = station.title, title.contains("Москва") {
-        //       print(station)
-        //     }
-        //   }
-
-        // }
-
         isLoading = false
       }
 
     } catch {
-      self.error = error
+      if let urlError = error as? URLError {
+        switch urlError.code {
+        case .notConnectedToInternet,
+          .networkConnectionLost,
+          .dataNotAllowed,
+          .cannotFindHost,
+          .cannotConnectToHost,
+          .dnsLookupFailed,
+          .timedOut:
+          self.error = .noConnection
+        default:
+          self.error = .unknown
+        }
+      } else {
+        self.error = .unknown
+      }
+
     }
 
     isLoading = false
