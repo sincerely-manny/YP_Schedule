@@ -17,7 +17,7 @@ final class ScheduleViewModel: ObservableObject {
   init() {
     self.client = Client(
       serverURL: try! Servers.Server1.url(), transport: URLSessionTransport())
-    self.service = AllStationsService(client: client, apikey: "Env.API_KEY")
+    self.service = AllStationsService(client: client, apikey: Env.API_KEY)
   }
 
   @MainActor
@@ -66,7 +66,7 @@ final class ScheduleViewModel: ObservableObject {
       let nsError = error as NSError
 
       switch nsError.code {
-      case ...99:
+      case ...1:
         self.error = .noConnection
       default:
         self.error = .unknown
