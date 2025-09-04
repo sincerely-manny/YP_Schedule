@@ -4,15 +4,10 @@ import SwiftUI
 final class ScheduleViewModel: ObservableObject {
   @Published var settlements: [Components.Schemas.Settlement] = []
   @Published var isLoading = false
-  @Published var error: ModelError?
+  @Published var error: ErrorState?
 
   private let client: Client
   private let service: AllStationsService
-
-  enum ModelError {
-    case noConnection
-    case unknown
-  }
 
   init() {
     self.client = Client(
@@ -67,9 +62,9 @@ final class ScheduleViewModel: ObservableObject {
 
       switch nsError.code {
       case ...1:
-        self.error = .noConnection
+        self.error = .noInternet
       default:
-        self.error = .unknown
+        self.error = .serverError
       }
 
     }

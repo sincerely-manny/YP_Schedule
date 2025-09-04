@@ -11,7 +11,7 @@ import SwiftUI
 struct TrainsApp: App {
   var body: some Scene {
     WindowGroup {
-      Root()
+      MainTabView()
     }
   }
 }

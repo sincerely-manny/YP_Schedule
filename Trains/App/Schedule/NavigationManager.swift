@@ -1,6 +1,6 @@
 import SwiftUI
 
-class NavigationManager: ObservableObject {
+final class NavigationManager: ObservableObject {
   @Published var path = NavigationPath()
 
   func navigateTo<T: Hashable>(_ destination: T) {

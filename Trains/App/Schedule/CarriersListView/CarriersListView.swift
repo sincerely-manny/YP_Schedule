@@ -4,43 +4,14 @@ struct CarriersListView: View {
   var from: Components.Schemas.Station
   var to: Components.Schemas.Station
   @StateObject private var viewModel: CarriersListViewModel
-  @State private var appliedTimeFilters = Set<TimeFilter>()
-  @State private var appliedTransferFilter = TransferFilter.no
-
-  private let isoFormatter: DateFormatter = {
-    let isoFormatter = DateFormatter()
-    isoFormatter.dateFormat = "yyyy-MM-dd"
-    return isoFormatter
-  }()
-
-  private let dateFormatter: DateFormatter = {
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "d MMMM"
-    return dateFormatter
-  }()
 
   private var filterIsDirty: Bool {
-    appliedTimeFilters.count != 0
-      || appliedTransferFilter != TransferFilter.no
+    viewModel.appliedTimeFilters.count != 0
+      || viewModel.appliedTransferFilter != TransferFilter.no
   }
 
   private var filteredSegments: [Components.Schemas.Segment] {
-    guard var segments = viewModel.schedule?.segments else { return [] }
-    if appliedTimeFilters.count != 0 {
-      segments = segments.filter { segment in
-        guard let departure = segment.departure else { return false }
-        for timeFilter in appliedTimeFilters {
-          if timeFilter.matches(departure) {
-            return true
-          }
-        }
-        return false
-      }
-    }
-    if !appliedTransferFilter.boolean {
-      segments = segments.filter { !($0.has_transfers ?? false) }
-    }
-    return segments
+    viewModel.getFilteredSegments()
   }
 
   init(
@@ -62,7 +33,7 @@ struct CarriersListView: View {
           .padding(.horizontal)
       }
       ZStack {
-        if filteredSegments.isEmpty && !viewModel.isLoading {
+        if filteredSegments.isEmpty && viewModel.state != .loading {
           VStack {
             Spacer()
             Text("Вариантов нет")
@@ -75,7 +46,8 @@ struct CarriersListView: View {
             LazyVStack(spacing: 8) {
               ForEach(filteredSegments, id: \.self) { segment in
                 SegmentView(
-                  segment: segment, isoFormatter: isoFormatter, dateFormatter: dateFormatter)
+                  segment: segment, isoFormatter: viewModel.isoFormatter,
+                  dateFormatter: viewModel.dateFormatter)
               }
             }
             .padding(.horizontal)
@@ -86,8 +58,8 @@ struct CarriersListView: View {
           Spacer()
           NavigationLink {
             FiltersView(
-              appliedTimeFilters: $appliedTimeFilters,
-              appliedTransferFilter: $appliedTransferFilter,
+              appliedTimeFilters: $viewModel.appliedTimeFilters,
+              appliedTransferFilter: $viewModel.appliedTransferFilter,
             )
             .toolbarRole(.editor)
           } label: {
@@ -114,54 +86,6 @@ struct CarriersListView: View {
       Task {
         await viewModel.loadSchedule(from: from, to: to)
       }
-    }
-  }
-}
-
-enum TimeFilter: String, CaseIterable {
-  case morning = "Утро 06:00 - 12:00"
-  case afternoon = "День 12:00 - 18:00"
-  case evening = "Вечер 18:00 - 00:00"
-  case night = "Ночь 00:00 - 06:00"
-
-  private static let timeFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "HH:mm:ss"
-    formatter.timeZone = TimeZone(secondsFromGMT: 0)
-    formatter.defaultDate = Date(timeIntervalSince1970: 0)
-
-    return formatter
-  }()
-
-  func matches(_ strtime: String) -> Bool {
-    guard let time = TimeFilter.timeFormatter.date(from: strtime) else { return false }
-    switch self {
-    case .morning:
-      return time >= Date(timeIntervalSince1970: 6 * 60 * 60)
-        && time <= Date(timeIntervalSince1970: 12 * 60 * 60)
-    case .afternoon:
-      return time >= Date(timeIntervalSince1970: 12 * 60 * 60)
-        && time <= Date(timeIntervalSince1970: 18 * 60 * 60)
-    case .evening:
-      return time >= Date(timeIntervalSince1970: 18 * 60 * 60)
-        && time <= Date(timeIntervalSince1970: 24 * 60 * 60)
-    case .night:
-      return time >= Date(timeIntervalSince1970: 0)
-        && time <= Date(timeIntervalSince1970: 6 * 60 * 60)
-    }
-  }
-}
-
-enum TransferFilter: String, CaseIterable {
-  case yes = "Да"
-  case no = "Нет"
-
-  var boolean: Bool {
-    switch self {
-    case .yes:
-      return true
-    case .no:
-      return false
     }
   }
 }

@@ -9,12 +9,7 @@ struct ScheduleScreen: View {
 
   var body: some View {
     if let error = viewModel.error {
-      switch error {
-      case .unknown:
-        ServerErrorView()
-      case .noConnection:
-        NoConnectionErrorView()
-      }
+      ErrorView(state: error)
     } else {
       NavigationStack(path: $navigationManager.path) {
         VStack(spacing: 16) {
