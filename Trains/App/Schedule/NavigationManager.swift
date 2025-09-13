@@ -57,3 +57,15 @@ struct CarriersDestination: Hashable {
     hasher.combine(to.codes?.yandex_code)
   }
 }
+
+struct CarrierInfoDestination: Hashable {
+  let carrier: Components.Schemas.Carrier
+
+  static func == (lhs: CarrierInfoDestination, rhs: CarrierInfoDestination) -> Bool {
+    return lhs.carrier.code == rhs.carrier.code
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(carrier.code)
+  }
+}

@@ -19,11 +19,9 @@ struct SegmentView: View {
 
   var body: some View {
     NavigationLink {
-      VStack {
-        Text("Carrier Details")
-      }
-      .navigationTitle("Информация о перевозчике")
-      .toolbarRole(.editor)
+      CarrierInfoView(carrier: segment.thread?.carrier)
+        .navigationTitle("Информация о перевозчике")
+        .toolbarRole(.editor)
     } label: {
       VStack(spacing: 18) {
         HStack(alignment: .top, spacing: 8) {
