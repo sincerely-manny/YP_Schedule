@@ -4,6 +4,7 @@ struct StoryDetail: View {
   let allStories: [StoryData]
   @Binding var selectedStory: StoryData?
   @Binding var showModal: Bool
+  @Binding var unseenStories: Set<UUID>
 
   @State private var progress: CGFloat = 0
   @State private var timer: Timer?
@@ -58,7 +59,7 @@ struct StoryDetail: View {
         .onDisappear {
           timer?.invalidate()
         }
-        .onChange(of: selectedStory) { _, _ in
+        .onChange(of: selectedStory) { _, newStory in
           animationID = UUID()
           startTimer()
         }
@@ -73,6 +74,10 @@ struct StoryDetail: View {
   private func startTimer() {
     timer?.invalidate()
     progress = 0
+
+    if let story = selectedStory {
+      unseenStories.remove(story.id)
+    }
 
     withAnimation(.linear(duration: selectedStory?.duration ?? 0)) {
       progress = 1

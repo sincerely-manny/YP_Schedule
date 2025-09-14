@@ -30,5 +30,3 @@ let sampleStories: [StoryData] = [
       "Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text Text",
     image: .story4),
 ]
-
-let unseenStories: Set<UUID> = [sampleStories[0].id, sampleStories[1].id]
