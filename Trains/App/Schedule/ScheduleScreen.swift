@@ -12,7 +12,8 @@ struct ScheduleScreen: View {
       ErrorView(state: error)
     } else {
       NavigationStack(path: $navigationManager.path) {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
+          StoriesList()
           HStack(alignment: .center, spacing: 16) {
             VStack {
               CityPicker(
@@ -91,7 +92,7 @@ struct ScheduleScreen: View {
       .environmentObject(navigationManager)
       .onAppear {
         Task {
-          await viewModel.fetchStations()
+          // await viewModel.fetchStations()
         }
       }
     }

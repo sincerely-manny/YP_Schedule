@@ -12,8 +12,9 @@ struct SettingsView: View {
         }.tint(.ypBlue).frame(height: 60)
         NavigationLink {
           EULA()
-            .navigationTitle("Информация о перевозчике")
+            .navigationTitle("Пользовательское соглашение")
             .toolbarRole(.editor)
+            .toolbar(.hidden, for: .tabBar)
         } label: {
           HStack {
             Text("Пользовательское соглашение")
