@@ -12,7 +12,7 @@ enum TabItem: String, CaseIterable, Identifiable {
     case .schedule:
       ScheduleScreen()
     case .settings:
-      Text("SettingsView()")
+      SettingsView()
     }
   }
 

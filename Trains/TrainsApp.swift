@@ -9,9 +9,10 @@ import SwiftUI
 
 @main
 struct TrainsApp: App {
+  @AppStorage("isDarkModeEnabled") var isDarkModeEnabled: Bool = false
   var body: some Scene {
     WindowGroup {
-      MainTabView()
+      MainTabView().preferredColorScheme(isDarkModeEnabled ? .dark : .light)
     }
   }
 }
