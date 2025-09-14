@@ -92,7 +92,7 @@ struct ScheduleScreen: View {
       .environmentObject(navigationManager)
       .onAppear {
         Task {
-          // await viewModel.fetchStations()
+          await viewModel.fetchStations()
         }
       }
     }
