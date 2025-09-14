@@ -66,7 +66,15 @@ struct StoryDetail: View {
         .gesture(
           TapGesture().onEnded {
             goToNextStory()
-          })
+          }
+        )
+        .gesture(
+          DragGesture(minimumDistance: 80)
+            .onEnded { value in
+              if value.translation.width < 0 {
+                goToNextStory()
+              }
+            })
       }
     }
   }
