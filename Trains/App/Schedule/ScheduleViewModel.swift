@@ -1,21 +1,14 @@
 import OpenAPIURLSession
 import SwiftUI
 
+@MainActor
 final class ScheduleViewModel: ObservableObject {
   @Published var settlements: [Components.Schemas.Settlement] = []
   @Published var isLoading = false
   @Published var error: ErrorState?
 
-  private let client: Client
-  private let service: AllStationsService
+  private let networkClient: NetworkClient = NetworkClient.shared
 
-  init() {
-    self.client = Client(
-      serverURL: try! Servers.Server1.url(), transport: URLSessionTransport())
-    self.service = AllStationsService(client: client, apikey: Env.API_KEY)
-  }
-
-  @MainActor
   func fetchStations() async {
     isLoading = true
     error = nil
@@ -26,37 +19,8 @@ final class ScheduleViewModel: ObservableObject {
     // End placeholder initialization
 
     do {
-      let all = try await service.getAllStations()
-
-      let russia = all.countries?.first { $0.title == "Россия" }
-      if let russia {
-        settlements =
-          russia.regions?
-          .compactMap { $0.settlements }
-          .flatMap { $0 }
-          .filter { settlement in
-            // Only settlements with non-empty titles
-            guard let title = settlement.title, !title.isEmpty else { return false }
-
-            // Only settlements that have train stations
-            let hasTrainStations =
-              settlement.stations?.contains { $0.station_type == "train_station" } ?? false
-            return hasTrainStations
-          }
-          .compactMap { settlement -> Components.Schemas.Settlement? in
-            // Create settlement with only train stations
-            guard let allStations = settlement.stations else { return nil }
-            let trainStations = allStations.filter { $0.station_type == "train_station" }
-
-            var updatedSettlement = settlement
-            updatedSettlement.stations = trainStations
-            return updatedSettlement
-          }
-          .sorted { ($0.title ?? "") < ($1.title ?? "") } ?? []
-
-        isLoading = false
-      }
-
+      settlements = try await networkClient.fetchStations()
+      isLoading = false
     } catch {
       let nsError = error as NSError
 
