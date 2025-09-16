@@ -18,7 +18,7 @@ protocol ScheduleBetweenStationsServiceProtocol {
   ) async throws -> ScheduleBetweenStations
 }
 
-final class ScheduleBetweenStationsService: ScheduleBetweenStationsServiceProtocol {
+final class ScheduleBetweenStationsService: ScheduleBetweenStationsServiceProtocol, Sendable {
   private let client: Client
   private let apikey: String
 

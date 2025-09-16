@@ -11,7 +11,7 @@ protocol AllStationsServiceProtocol {
   ) async throws -> AllStations
 }
 
-final class AllStationsService: AllStationsServiceProtocol {
+final class AllStationsService: AllStationsServiceProtocol, Sendable {
   private let client: Client
   private let apikey: String
 

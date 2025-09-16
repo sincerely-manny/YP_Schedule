@@ -74,7 +74,8 @@ struct StoryDetail: View {
               if value.translation.width < 0 {
                 goToNextStory()
               }
-            })
+            }
+        )
       }
     }
   }
@@ -93,7 +94,9 @@ struct StoryDetail: View {
 
     timer = Timer.scheduledTimer(withTimeInterval: selectedStory?.duration ?? 0, repeats: false) {
       _ in
-      goToNextStory()
+      Task { @MainActor in
+        goToNextStory()
+      }
     }
   }
 

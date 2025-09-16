@@ -16,9 +16,9 @@ struct CarriersListView: View {
 
   init(
     from: Components.Schemas.Station, to: Components.Schemas.Station,
-    viewModel: CarriersListViewModel = CarriersListViewModel()
+    viewModel: CarriersListViewModel? = nil
   ) {
-    self._viewModel = StateObject(wrappedValue: viewModel)
+    self._viewModel = StateObject(wrappedValue: viewModel ?? CarriersListViewModel())
     self.from = from
     self.to = to
   }
@@ -82,10 +82,8 @@ struct CarriersListView: View {
         }
       }.frame(maxHeight: .infinity)
     }
-    .onAppear {
-      Task {
-        await viewModel.loadSchedule(from: from, to: to)
-      }
+    .task {
+      await viewModel.loadSchedule(from: from, to: to)
     }
   }
 }

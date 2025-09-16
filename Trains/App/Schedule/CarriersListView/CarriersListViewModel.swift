@@ -1,8 +1,8 @@
 import OpenAPIURLSession
 import SwiftUI
 
+@MainActor
 final class CarriersListViewModel: ObservableObject {
-  @Published var schedule: ScheduleBetweenStations? = nil
   @Published var appliedTimeFilters = Set<TimeFilter>()
   @Published var appliedTransferFilter = TransferFilter.no
   @Published var state: CarriersListState = .loading
@@ -14,8 +14,7 @@ final class CarriersListViewModel: ObservableObject {
     case error(String)
   }
 
-  private let client: Client
-  private let service: ScheduleBetweenStationsService
+  private let networkClient: NetworkClient = NetworkClient.shared
 
   let isoFormatter: DateFormatter = {
     let isoFormatter = DateFormatter()
@@ -29,35 +28,36 @@ final class CarriersListViewModel: ObservableObject {
     return dateFormatter
   }()
 
-  init() {
-    self.client = Client(
-      serverURL: try! Servers.Server1.url(), transport: URLSessionTransport())
-    self.service = ScheduleBetweenStationsService(client: client, apikey: Env.API_KEY)
-  }
-
-  @MainActor
   func loadSchedule(from: Components.Schemas.Station, to: Components.Schemas.Station) async {
-    guard let fromCode = from.codes?.yandex_code, let toCode = to.codes?.yandex_code else {
-      return
-    }
     state = .loading
     do {
-      schedule = try await service.getScheduleBetweenStations(
-        from: fromCode, to: toCode, transfers: true)
-    } catch {
-      state = .error(error.localizedDescription)
-    }
-    if let segments = schedule?.segments, !segments.isEmpty {
+      let segments = try await networkClient.getScheduleBetweenStationsSegments(from: from, to: to)
       state = .loaded(segments)
-    } else {
-      state = .empty
+    } catch {
+      switch error {
+      case NetworkClient.NetworkClientError.noScheduleFound:
+        state = .empty
+      default:
+        state = .error(error.localizedDescription)
+      }
     }
   }
 
   func getFilteredSegments()
     -> [Components.Schemas.Segment]
   {
-    guard var segments = schedule?.segments else { return [] }
+    var segments: [Components.Schemas.Segment] = []
+    switch state {
+    case .loading:
+      return segments
+    case .empty:
+      return segments
+    case .loaded(let value):
+      segments = value
+    case .error(_):
+      return segments
+    }
+
     if appliedTimeFilters.count != 0 {
       segments = segments.filter { segment in
         guard let departure = segment.departure else { return false }
